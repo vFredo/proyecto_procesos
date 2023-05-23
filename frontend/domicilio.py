@@ -10,6 +10,14 @@ def simular_domicilio(log_file):
 
     current_time = datetime.strptime(data[0]['datetime'], "%Y-%m-%dT%H:%M:%S")
 
+    print("\nEstá a punto de comenzar la simulación de un domicilio de un dron por la universidad Javeriana de Cali con destino Palmas\n")
+
+    time.sleep(5)
+
+    print("\nNotificando al usuario que su pedido está en camino...\n")
+
+    time.sleep(3)
+
     for entry in data:
         event_time = datetime.strptime(entry['datetime'], "%Y-%m-%dT%H:%M:%S")
         time_diff = (event_time - current_time).total_seconds()

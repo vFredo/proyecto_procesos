@@ -1,9 +1,12 @@
 import requests
-from sesion import TOKEN, URL_BASE
+import json
+from sesion import TOKEN
 from datetime import datetime
 
+URL_BASE = "http://localhost:8004/api/v1/bitacora/"
+
 def crear_anotacion():
-    print("\nCreando una nueva anotacion...")
+    print("\nCreando una nueva anotacion...\n")
     id_dispositivo = input("Ingrese el ID del dispositivo: ")
     fecha = datetime.now()
     anotacion = input("Ingrese la anotación: ")
@@ -21,27 +24,40 @@ def crear_anotacion():
     respuesta = requests.post(url, json=datos, headers=headers)
 
     if respuesta.status_code == 200:
-        print("\nAnotación creada con éxito.\n")
+        if respuesta.json()['code'] == 200: 
+            print("\nAnotación creada con éxito.")
+        else:
+            print("\n" + respuesta.json()['message'])
     else:
-        print("\nError al crear la anotación. Por favor intente nuevamente.\n")
+        print("\nError al crear la anotación. Por favor intente nuevamente.")
 
 def obtener_anotacion_dispositivo():
-    dispositivo_id = input("Ingrese el ID del dispositivo para obtener sus anotaciones: ")
+    dispositivo_id = input("\nIngrese el ID del dispositivo para obtener sus anotaciones: ")
     url = URL_BASE + f"dispositivo/{dispositivo_id}/"
     headers = {"Authorization": f"Bearer {TOKEN}"}
 
     respuesta = requests.get(url, headers=headers)
 
     if respuesta.status_code == 200:
-        print("\nInformación de las anotaciones obtenida con éxito:\n")
-        print(respuesta.json())
+        if respuesta.json()['code'] == 200:
+            print("\nInformación de las anotaciones obtenida con éxito:\n")
+
+            anotaciones = respuesta.json()['message']
+            
+            for anotacion in anotaciones:
+                # Usar json.dumps con los argumentos indent y sort_keys para formatear la salida
+                json_formatted_str = json.dumps(anotacion, indent=2, sort_keys=True, ensure_ascii=False)
+                
+                print(json_formatted_str)
+        else:
+            print("\n" + respuesta.json()['message'])
     else:
-        print("\nError al obtener las anotaciones del dispositivo. Por favor intente nuevamente.\n")
+        print("\nError al obtener las anotaciones del dispositivo. Por favor intente nuevamente.")
 
 def actualizar_anotacion():
-    anotacion_id = input("Ingrese el ID de la anotación que desea actualizar: ")
+    anotacion_id = input("\nIngrese el ID de la anotación que desea actualizar: ")
 
-    print("Ingrese la nueva información de la anotación...")
+    print("\nIngrese la nueva información de la anotación...\n")
     id_dispositivo = input("Ingrese el ID del dispositivo: ")
     anotacion = input("Ingrese la anotación: ")
 
@@ -58,24 +74,30 @@ def actualizar_anotacion():
     respuesta = requests.put(url, json=datos, headers=headers)
 
     if respuesta.status_code == 200:
-        print("\nAnotación actualizada con éxito.\n")
+        if respuesta.json()['code'] == 200:
+            print("\nAnotación actualizada con éxito.")
+        else:
+            print("\n" + respuesta.json()['message'])
     else:
-        print("\nError al actualizar la anotación. Por favor intente nuevamente.\n")
+        print("\nError al actualizar la anotación. Por favor intente nuevamente.")
 
 def eliminar_anotacion():
-    anotacion_id = input("Ingrese el ID de la anotación que desea eliminar: ")
+    anotacion_id = input("\nIngrese el ID de la anotación que desea eliminar: ")
     url = URL_BASE + f"delete/{anotacion_id}/"
     headers = {"Authorization": f"Bearer {TOKEN}"}
 
     respuesta = requests.delete(url, headers=headers)
 
     if respuesta.status_code == 200:
-        print("\nAnotación eliminada con éxito.\n")
+        if respuesta.json()['code'] == 200:
+            print("\nAnotación eliminada con éxito.")
+        else:
+            print("\n" + respuesta.json()['message'])
     else:
-        print("\nError al eliminar la anotación. Por favor intente nuevamente.\n")
+        print("\nError al eliminar la anotación. Por favor intente nuevamente.")
 
 def administrar_bitacora():
-    print("\nAdministrar bitacora")
+    print("\nAdministrar bitacora\n")
     print("1. Crear anotación")
     print("2. Obtener anotaciones dispositivo")
     print("3. Actualizar anotación")
@@ -94,4 +116,4 @@ def administrar_bitacora():
     elif opcion == "5":
         return
     else:
-        print("\nOpción no válida, intente nuevamente\n")
+        print("\nOpción no válida, intente nuevamente")

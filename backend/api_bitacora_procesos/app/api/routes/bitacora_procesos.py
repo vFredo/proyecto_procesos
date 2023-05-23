@@ -111,4 +111,4 @@ def delete_bitacora_procesos(anotacion_id:str):
 
 @bitacora_procesos.get('/dispositivo/{dispositivo_id}/', tags=['Anotaciones'])
 def get_anotaciones_dispositivo(dispositivo_id:str):
-    return get_many({ "dispositivo_id": dispositivo_id }, conn.rappidron.bitacora)
+    return get_many({ "id_dispositivo": dispositivo_id }, conn.rappidron.bitacora)

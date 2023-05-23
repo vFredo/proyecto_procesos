@@ -1,9 +1,11 @@
 import requests
-from sesion import TOKEN, URL_BASE
-from datetime import datetime
+import json
+from sesion import TOKEN
+
+URL_BASE = "http://localhost:8003/api/v1/inventario/"
 
 def crear_dispositivo():
-    print("\nCreando un nuevo dispositivo...")
+    print("\nCreando un nuevo dispositivo...\n")
     tipo_dispositivo = input("Ingrese el tipo de dispositivo (dron/robot): ")
     color = input("Ingrese el color del dispositivo: ")
     modelo = input("Ingrese el modelo del dispositivo: ")
@@ -27,27 +29,37 @@ def crear_dispositivo():
     respuesta = requests.post(url, json=datos, headers=headers)
 
     if respuesta.status_code == 200:
-        print("\nDispositivo creado con éxito.\n")
+        if respuesta.json()['code'] == 200: 
+            print("\nDispositivo creado con éxito.")
+        else:
+            print("\n" + respuesta.json()['message'])
     else:
-        print("\nError al crear el dispositivo. Por favor intente nuevamente.\n")
+        print("\nError al crear el dispositivo. Por favor intente nuevamente.")
 
 def obtener_dispositivo():
-    dispositivo_id = input("Ingrese el ID del dispositivo que desea obtener: ")
+    dispositivo_id = input("\nIngrese el ID del dispositivo que desea obtener: ")
     url = URL_BASE + f"read/{dispositivo_id}/"
     headers = {"Authorization": f"Bearer {TOKEN}"}
 
     respuesta = requests.get(url, headers=headers)
 
     if respuesta.status_code == 200:
-        print("\nInformación del dispositivo obtenida con éxito:\n")
-        print(respuesta.json())
+        if respuesta.json()['code'] == 200: 
+            print("\nInformación del dispositivo obtenida con éxito:\n")
+
+            # Usar json.dumps con los argumentos indent y sort_keys para formatear la salida
+            json_formatted_str = json.dumps(respuesta.json()['message'], indent=2, sort_keys=True, ensure_ascii=False)
+            
+            print(json_formatted_str)
+        else:
+            print("\n" + respuesta.json()['message'])
     else:
-        print("\nError al obtener la información del dispositivo. Por favor intente nuevamente.\n")
+        print("\nError al obtener la información del dispositivo. Por favor intente nuevamente.")
 
 def actualizar_dispositivo():
-    dispositivo_id = input("Ingrese el ID del dispositivo que desea actualizar: ")
+    dispositivo_id = input("\nIngrese el ID del dispositivo que desea actualizar: ")
 
-    print("Ingrese la nueva información del dispositivo...")
+    print("\nIngrese la nueva información del dispositivo...\n")
     tipo_dispositivo = input("Ingrese el tipo de dispositivo (dron/robot): ")
     color = input("Ingrese el color del dispositivo: ")
     modelo = input("Ingrese el modelo del dispositivo: ")
@@ -71,24 +83,27 @@ def actualizar_dispositivo():
     respuesta = requests.put(url, json=datos, headers=headers)
 
     if respuesta.status_code == 200:
-        print("\nDispositivo actualizado con éxito.\n")
+        if respuesta.json()['code'] == 200: 
+            print("\nDispositivo actualizado con éxito.")
+        else:
+            print("\n" + respuesta.json()['message'])
     else:
-        print("\nError al actualizar el dispositivo. Por favor intente nuevamente.\n")
+        print("\nError al actualizar el dispositivo. Por favor intente nuevamente.")
 
 def eliminar_dispositivo():
-    dispositivo_id = input("Ingrese el ID del dispositivo que desea eliminar: ")
+    dispositivo_id = input("\nIngrese el ID del dispositivo que desea eliminar: ")
     url = URL_BASE + f"delete/{dispositivo_id}/"
     headers = {"Authorization": f"Bearer {TOKEN}"}
 
     respuesta = requests.delete(url, headers=headers)
 
     if respuesta.status_code == 200:
-        print("\nDispositivo eliminado con éxito.\n")
+        print("\nDispositivo eliminado con éxito.")
     else:
-        print("\nError al eliminar el dispositivo. Por favor intente nuevamente.\n")
+        print("\nError al eliminar el dispositivo. Por favor intente nuevamente.")
 
 def administrar_inventario():
-    print("\nAdministrar inventario")
+    print("\nAdministrar inventario\n")
     print("1. Crear dispositivo")
     print("2. Obtener dispositivo")
     print("3. Actualizar dispositivo")
@@ -107,4 +122,4 @@ def administrar_inventario():
     elif opcion == "5":
         return
     else:
-        print("\nOpción no válida, intente nuevamente\n")
+        print("\nOpción no válida, intente nuevamente")

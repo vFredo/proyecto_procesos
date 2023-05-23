@@ -4,7 +4,7 @@ from app.api.utils.oauth import AuthHandler
 from passlib.context import CryptContext
 from fastapi.encoders import jsonable_encoder
 from app.api.schemas.usuarios_procesos import usuarios_procesossEntity, usuarios_procesosEntity
-from app.api.models.usuarios_procesos import Usuario
+from app.api.models.usuarios_procesos import Usuario, Credentials, PasswordModel
 from app.api.config.db import conn
 from app.api.utils.acces_security import get_current_username
 from fastapi import APIRouter, Depends, HTTPException, Request, Response
@@ -94,22 +94,14 @@ def post_usuarios_procesos(usuario:Usuario):
     response = None
 
     try:
-        if re.match(r'^(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{6,12}$', usuario.password):
-            existing_user = conn.rappidron.usuarios.find_one({"user": usuario.user})
+        existing_user = conn.rappidron.usuarios.find_one({"user": usuario.user})
 
-            if not existing_user:
-                user_dict = jsonable_encoder(usuario)
-                user_dict['password'] = pwd_context.hash(user_dict['password'])
+        if not existing_user:
+            usuario.password = pwd_context.hash(usuario.password)
 
-                result = conn.rappidron.usuarios.insert_one(user_dict)
-
-                response = post(usuario, conn.rappidron.usuarios)
-            else:
-                error['message'] = "The user is already registered"
-
-                response = error
+            response = post(usuario, conn.rappidron.usuarios)
         else:
-            error['message'] = "The password must be 6 to 12 characters long and must have at least one uppercase letter and one number"
+            error['message'] = "El usuario ya se encuentra registrado"
 
             response = error
     except Exception as e:
@@ -137,20 +129,18 @@ def delete_usuarios_procesos(usuario_id:str):
     return delete('_id', conn.rappidron.usuarios, usuario_id)
 
 @usuarios_procesos.post("/login/", tags=['Login'])
-def login(user: str, password: str):
+def login(credentials: Credentials):
     response = None
     
     try:
-        if user and password:
-            user_dict = conn.rappidron.usuarios.find_one({ "user": user })
-
-            print("user_dict:", user_dict)
+        if credentials.user and credentials.password:
+            user_dict = conn.rappidron.usuarios.find_one({ "user": credentials.user })
 
             if user_dict:
                 user_dict["_id"] = str(user_dict["_id"])
                 hashed_password = user_dict["password"]
                 
-                if pwd_context.verify(password, hashed_password):
+                if pwd_context.verify(credentials.password, hashed_password):
                     access_token = auth_handler.encode_token(user_dict)
                     user_dict["token"] = access_token
 
@@ -166,7 +156,7 @@ def login(user: str, password: str):
 
                 response = error
         else:
-            data_object['message'] = "You must enter a username and a password"
+            data_object['message'] = "Los campos user y/o password se encuentran vacios"
 
             response = data_object
     except Exception as e:
@@ -177,20 +167,17 @@ def login(user: str, password: str):
     return response
 
 @usuarios_procesos.put('/password/{usuario_id}/', tags=['Password'])
-def update_password(usuario_id: str, password:str):
+def update_password(usuario_id: str, password:PasswordModel):
     response = None
 
     try:
-        if re.match(r'^(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{6,12}$', password):
-            password = pwd_context.hash(password)
-            response = put('_id', conn.rappidron.usuarios, usuario_id, { "password": password })
-        else:
-            error['message'] = "The password must be 6 to 12 characters long and must have at least one uppercase letter and one number"
-
-            response = error
+        password.password = pwd_context.hash(password.password)
+        response = put('_id', conn.rappidron.usuarios, usuario_id, dict(password))
     except Exception as e:
         error['message'] = str(e)
 
         response = error
+
+    print("response:", response)
 
     return response

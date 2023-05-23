@@ -6,3 +6,10 @@ class Usuario(BaseModel):
     password: str
     multas: Optional[int] = 0
     deuda: Optional[float] = 0.0
+
+class Credentials(BaseModel):
+    user: str
+    password: str
+
+class PasswordModel(BaseModel):
+    password: str

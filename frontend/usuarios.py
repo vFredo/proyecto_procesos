@@ -3,7 +3,7 @@ import getpass
 from sesion import TOKEN, URL_BASE
 
 def crear_usuario():
-    usuario = input("Ingrese el nombre de usuario: ")
+    usuario = input("\nIngrese el nombre de usuario: ")
     password = getpass.getpass("Ingrese la contraseña: ")
 
     url = URL_BASE + "post/"
@@ -20,12 +20,15 @@ def crear_usuario():
     respuesta = requests.post(url, json=datos, headers=headers)
 
     if respuesta.status_code == 200:
-        print("\nUsuario creado con éxito.\n")
+        if respuesta.json()['code'] == 200: 
+            print("\nUsuario creado con éxito.")
+        else:
+            print("\n" + respuesta.json()['message'])
     else:
-        print("\nError al crear el usuario. Por favor intente nuevamente.\n")
+        print("\nError al crear el usuario. Por favor intente nuevamente.")
 
 def eliminar_usuario():
-    usuario_id = input("Ingrese el ID del usuario a eliminar: ")
+    usuario_id = input("\nIngrese el ID del usuario a eliminar: ")
 
     url = URL_BASE + "delete/" + usuario_id
 
@@ -34,12 +37,12 @@ def eliminar_usuario():
     respuesta = requests.delete(url, headers=headers)
 
     if respuesta.status_code == 200:
-        print("\nUsuario eliminado con éxito.\n")
+        print("\nUsuario eliminado con éxito.")
     else:
-        print("\nError al eliminar el usuario. Por favor intente nuevamente.\n")
+        print("\nError al eliminar el usuario. Por favor intente nuevamente.")
 
 def actualizar_password():
-    usuario_id = input("Ingrese el ID del usuario a actualizar: ")
+    usuario_id = input("\nIngrese el ID del usuario a actualizar: ")
     password = getpass.getpass("Ingrese la nueva contraseña: ")
 
     url = URL_BASE + "password/" + usuario_id
@@ -53,12 +56,12 @@ def actualizar_password():
     respuesta = requests.put(url, json=datos, headers=headers)
 
     if respuesta.status_code == 200:
-        print("\nContraseña actualizada con éxito.\n")
+        print("\nContraseña actualizada con éxito.")
     else:
-        print("\nError al actualizar la contraseña. Por favor intente nuevamente.\n")
+        print("\nError al actualizar la contraseña. Por favor intente nuevamente.")
 
 def administrar_usuarios():
-    print("\nAdministrar usuarios")
+    print("\nAdministrar usuarios\n")
     print("1. Crear usuario")
     print("2. Eliminar usuario")
     print("3. Actualizar contraseña")
@@ -74,4 +77,4 @@ def administrar_usuarios():
     elif opcion == "4":
         return
     else:
-        print("\nOpción no válida, intente nuevamente\n")
+        print("\nOpción no válida, intente nuevamente")
